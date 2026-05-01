@@ -3,74 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON EDIT | BG CHANGER PRO</title>
+    <title>D PHOTO TOOLS | PRO EDITOR</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --bg: #0a0a0a; --panel: #151515; }
-        body { background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { background: var(--panel); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; }
-        .logo { font-family: 'Orbitron', sans-serif; color: var(--neon); text-shadow: 0 0 10px var(--neon); font-size: 1.5rem; }
-        .main-container { display: flex; flex: 1; }
-        .sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid #222; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #555; border-left: 3px solid var(--neon); padding-left: 10px; }
-        .control-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; margin-bottom: 5px; color: #888; }
-        input[type="range"], input[type="color"] { width: 100%; cursor: pointer; }
-        input[type="color"] { height: 40px; border: none; background: transparent; }
-        .btn { background: transparent; border: 1px solid #333; color: white; padding: 10px; width: 100%; cursor: pointer; transition: 0.3s; margin-top: 5px; }
-        .btn:hover { border-color: var(--neon); color: var(--neon); }
+        :root { --neon: #00f2ff; --bg: #050505; --panel: #121212; --accent: #ff0055; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'Poppins', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Header Area */
+        header { background: var(--panel); padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; z-index: 10; }
+        .logo { font-family: 'Orbitron', sans-serif; color: var(--neon); text-shadow: 0 0 10px var(--neon); font-size: 1.2rem; }
+        .header-btns { display: flex; gap: 10px; }
+
+        /* Main Viewport */
+        .editor-container { flex: 1; display: flex; position: relative; background: #000; overflow: hidden; }
+
+        /* Sidebar for Adjustments */
+        .adjust-sidebar { width: 260px; background: var(--panel); padding: 20px; border-right: 1px solid #222; display: flex; flex-direction: column; gap: 20px; }
+        h3 { font-size: 10px; text-transform: uppercase; color: #555; letter-spacing: 2px; margin-bottom: 10px; }
+
+        /* Center Canvas Area (Photo Big & Centered) */
+        .workspace { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; }
+        .canvas-holder { max-width: 100%; max-height: 100%; display: flex; justify-content: center; align-items: center; }
+        canvas { max-width: 100%; max-height: 80vh; object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+        #imgToCrop { display: none; max-width: 100%; max-height: 80vh; }
+
+        /* Bottom Toolbar (PicsArt Style) */
+        .bottom-toolbar { background: var(--panel); height: 80px; display: flex; justify-content: center; align-items: center; gap: 30px; border-top: 1px solid #222; }
+        .tool-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #888; transition: 0.3s; }
+        .tool-icon:hover { color: var(--neon); }
+        .tool-icon span { font-size: 11px; margin-top: 5px; }
+
+        /* Buttons & Inputs */
+        input[type="range"] { width: 100%; accent-color: var(--neon); cursor: pointer; }
+        .btn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 12px; }
         .btn-neon { background: var(--neon); color: black; font-weight: bold; border: none; }
-        .editor-view { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; position: relative; }
-        canvas { max-width: 90%; max-height: 85vh; border: 1px solid #333; }
-        #imgToCrop { display: none; }
+        
+        /* Cropper Customization */
+        .cropper-view-box, .cropper-face { border-radius: 0; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">NEON<span>EDIT</span></div>
-    <div>
+    <div class="logo">D PHOTO TOOLS</div>
+    <div class="header-btns">
         <input type="file" id="upload" hidden>
-        <label for="upload" class="btn btn-neon" style="padding: 10px 20px;">OPEN PHOTO</label>
-        <button id="download" class="btn" style="width:auto; padding: 10px 20px;">SAVE PNG</button>
+        <label for="upload" class="btn">IMPORT</label>
+        <button id="download" class="btn btn-neon">EXPORT</button>
     </div>
 </header>
 
-<div class="main-container">
-    <aside class="sidebar">
-        <section>
-            <h3>1. Background Change</h3>
-            <div class="control-group">
-                <label>Select New BG Color</label>
-                <input type="color" id="bgColor" value="#000000">
-            </div>
-            <div class="control-group">
-                <label>Remove Transparency (Sensitivity)</label>
-                <input type="range" id="sensitivity" min="0" max="100" value="10">
-            </div>
-        </section>
-
-        <section>
-            <h3>2. Adjustments</h3>
-            <div class="control-group">
-                <label>Brightness</label>
-                <input type="range" id="bright" min="0" max="200" value="100">
-            </div>
-        </section>
-
-        <section>
-            <h3>3. Tools</h3>
-            <button class="btn" id="cropBtn">Crop Photo</button>
-            <button class="btn btn-neon" id="applyCrop" style="display:none;">Apply Crop</button>
-        </section>
+<div class="editor-container">
+    <!-- Sidebar: Live Adjustments -->
+    <aside class="adjust-sidebar">
+        <div>
+            <h3>Adjustments</h3>
+            <label style="font-size: 12px; color: #aaa;">Brightness</label>
+            <input type="range" id="bright" min="0" max="200" value="100">
+            
+            <label style="font-size: 12px; color: #aaa; margin-top: 15px; display: block;">Contrast</label>
+            <input type="range" id="contr" min="0" max="200" value="100">
+        </div>
+        
+        <div>
+            <h3>Background</h3>
+            <label style="font-size: 12px; color: #aaa;">BG Color</label>
+            <input type="color" id="bgColor" value="#000000" style="width:100%; height:30px; border:none; background:none;">
+        </div>
     </aside>
 
-    <main class="editor-view">
-        <img id="imgToCrop">
-        <canvas id="canvas"></canvas>
+    <!-- Main Photo Area: Centered and Large -->
+    <main class="workspace">
+        <div class="canvas-holder">
+            <img id="imgToCrop">
+            <canvas id="canvas"></canvas>
+        </div>
+        <!-- Apply Crop Floating Button -->
+        <button id="applyCrop" class="btn btn-neon" style="position:absolute; bottom: 20px; display:none; z-index: 100;">APPLY CROP</button>
     </main>
 </div>
+
+<!-- Bottom PicsArt Menu -->
+<nav class="bottom-toolbar">
+    <div class="tool-icon" id="cropBtn">
+        <div style="font-size: 20px;">✂️</div>
+        <span>CROP</span>
+    </div>
+    <div class="tool-icon" onclick="applyPreset('grayscale(100%)')">
+        <div style="font-size: 20px;">🎭</div>
+        <span>B&W</span>
+    </div>
+    <div class="tool-icon" onclick="applyPreset('hue-rotate(90deg)')">
+        <div style="font-size: 20px;">🌈</div>
+        <span>NEON</span>
+    </div>
+    <div class="tool-icon" onclick="applyPreset('none')">
+        <div style="font-size: 20px;">🔄</div>
+        <span>RESET</span>
+    </div>
+</nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
@@ -94,32 +127,40 @@
     };
 
     function render() {
+        // Photo size calculation
         canvas.width = activeImg.width;
         canvas.height = activeImg.height;
         
-        // Background color draw
+        // Fill Background
         ctx.fillStyle = document.getElementById('bgColor').value;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Applying Brightness
+        // Live Adjustments
         const b = document.getElementById('bright').value;
-        ctx.filter = `brightness(${b}%)`;
+        const c = document.getElementById('contr').value;
+        ctx.filter = `brightness(${b}%) contrast(${c}%)`;
         
-        // Draw Image
+        // Center draw
         ctx.drawImage(activeImg, 0, 0);
     }
 
-    // Live update for inputs
+    // Live Change on Input
     document.querySelectorAll('input').forEach(input => {
         input.oninput = render;
     });
 
-    // Crop functionality
+    function applyPreset(f) {
+        ctx.filter = f;
+        ctx.drawImage(activeImg, 0, 0);
+    }
+
+    // Crop Implementation
     document.getElementById('cropBtn').onclick = () => {
+        if(!activeImg.src) return alert("Pehle photo load karo!");
         canvas.style.display = 'none';
         imgDisplay.style.display = 'block';
         document.getElementById('applyCrop').style.display = 'block';
-        cropper = new Cropper(imgDisplay, { viewMode: 1 });
+        cropper = new Cropper(imgDisplay, { viewMode: 1, guides: true });
     };
 
     document.getElementById('applyCrop').onclick = () => {
@@ -133,10 +174,9 @@
         };
     };
 
-    // Download
     document.getElementById('download').onclick = () => {
         const link = document.createElement('a');
-        link.download = 'neon_bg_edit.png';
+        link.download = 'D_Photo_Edit.png';
         link.href = canvas.toDataURL();
         link.click();
     };
