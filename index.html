@@ -2,121 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D PHOTO TOOLS | PRO EDITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>D PHOTO TOOLS | PRO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #000000; --panel: #121212; --slider-track: #333; --slider-thumb: #ffffff; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --bg: #000; --panel: #111; --white: #fff; }
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--white); font-family: sans-serif; overflow: hidden; }
 
-        /* Header */
-        header { background: var(--panel); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; }
-        .logo { font-family: 'Orbitron', sans-serif; color: #fff; letter-spacing: 1px; font-size: 0.9rem; }
-        .btn-sm { background: #222; border: none; color: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; font-weight: 600; }
-        .btn-save { background: #fff; color: #000; }
+        /* Full Screen Layout */
+        .app-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-        /* Workspace (Photo Area) */
-        .workspace { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; padding: 15px; position: relative; }
-        canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+        header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: var(--panel); border-bottom: 1px solid #222; }
+        .logo { font-weight: bold; letter-spacing: 1px; font-size: 14px; }
+
+        /* Photo Area - Fixed 9:16 Aspect Ratio Container */
+        .workspace { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; background: #080808; position: relative; }
+        #canvas { max-width: 90%; max-height: 90%; object-fit: contain; }
         #imgToCrop { display: none; max-width: 100%; }
 
-        /* Lightroom Style Controls */
-        .controls-wrapper { background: var(--panel); padding: 20px 15px 10px 15px; border-top: 1px solid #1a1a1a; }
+        /* Controls Area - No Scroll */
+        .controls { background: var(--panel); padding: 15px; border-top: 1px solid #222; }
+        .slider-box { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .row { display: flex; align-items: center; gap: 10px; }
+        .row label { font-size: 10px; color: #666; width: 60px; text-transform: uppercase; }
         
-        .slider-container { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto 20px auto; }
-        .slider-row { display: flex; flex-direction: column; gap: 8px; }
-        .slider-row label { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        input[type="range"] { flex: 1; -webkit-appearance: none; background: #333; height: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: var(--white); border-radius: 50%; }
 
-        /* Professional Lightroom Slider */
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        input[type="range"]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 2px;
-            background: var(--slider-track);
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 14px;
-            width: 14px;
-            border-radius: 50%;
-            background: var(--slider-thumb);
-            cursor: pointer;
-            margin-top: -6px; /* Center thumb on track */
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
+        /* Bottom Menu */
+        .menu { display: flex; justify-content: space-around; padding-bottom: 5px; }
+        .menu-btn { background: none; border: none; color: #555; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+        .menu-btn.active { color: var(--white); }
 
-        /* Bottom Navigation */
-        .bottom-menu { display: flex; justify-content: space-around; align-items: center; padding: 10px 0; border-top: 1px solid #1a1a1a; }
-        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #555; }
-        .menu-item.active, .menu-item:hover { color: #fff; }
-        .menu-item i { font-size: 18px; margin-bottom: 5px; }
-        .menu-item span { font-size: 9px; font-weight: 600; }
-
-        #applyCrop { position: absolute; top: 20px; right: 20px; z-index: 100; display: none; background: #fff; color: #000; padding: 8px 16px; border-radius: 20px; border: none; font-weight: bold; font-size: 11px; }
+        .btn-main { background: var(--white); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+        #applyCrop { position: absolute; top: 10px; right: 10px; z-index: 10; display: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo">D PHOTO TOOLS</div>
-    <div style="display: flex; gap: 10px;">
-        <input type="file" id="upload" hidden>
-        <label for="upload" class="btn-sm">ADD</label>
-        <button id="download" class="btn-sm btn-save">EXPORT</button>
+<div class="app-wrapper">
+    <header>
+        <div class="logo">D PHOTO TOOLS</div>
+        <div style="display:flex; gap:10px;">
+            <input type="file" id="upload" hidden accept="image/*">
+            <button onclick="document.getElementById('upload').click()" class="btn-main" style="background:#222; color:#fff;">ADD</button>
+            <button id="download" class="btn-main">SAVE</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <canvas id="canvas"></canvas>
+        <img id="imgToCrop">
+        <button id="applyCrop" class="btn-main">DONE</button>
+    </main>
+
+    <div class="controls">
+        <div class="slider-box">
+            <div class="row"><label>Light</label><input type="range" id="bright" min="0" max="200" value="100"></div>
+            <div class="row"><label>Color</label><input type="range" id="satur" min="0" max="200" value="100"></div>
+            <div class="row">
+                <label>BG</label>
+                <input type="color" id="bgColor" value="#000000" style="width:30px; height:20px; border:none; background:none;">
+                <span style="font-size: 9px; color:#444;">Select color to change BG</span>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <div class="menu-btn" id="cropBtn"><span>✂️</span>CROP</div>
+            <div class="menu-btn" onclick="applyFilter('grayscale(100%)')"><span>🌑</span>B&W</div>
+            <div class="menu-btn" onclick="resetAll()"><span>🔄</span>RESET</div>
+        </nav>
     </div>
-</header>
-
-<main class="workspace">
-    <img id="imgToCrop">
-    <canvas id="canvas"></canvas>
-    <button id="applyCrop">DONE</button>
-</main>
-
-<div class="controls-wrapper">
-    <div class="slider-container">
-        <div class="slider-row">
-            <label>Exposure (Brightness)</label>
-            <input type="range" id="bright" min="0" max="200" value="100">
-        </div>
-        <div class="slider-row">
-            <label>Contrast</label>
-            <input type="range" id="contr" min="0" max="200" value="100">
-        </div>
-        <div class="slider-row">
-            <label>Saturation</label>
-            <input type="range" id="satur" min="0" max="200" value="100">
-        </div>
-    </div>
-
-    <nav class="bottom-menu">
-        <div class="menu-item" id="cropBtn"><i>✂️</i><span>CROP</span></div>
-        <div class="menu-item" onclick="applyPreset('grayscale(100%)')"><i>🌑</i><span>B&W</span></div>
-        <div class="menu-item" onclick="resetAll()"><i>🔄</i><span>RESET</span></div>
-        <div class="menu-item">
-            <input type="color" id="bgColor" value="#000000" style="width:20px; height:20px; border:none; background:none; cursor:pointer;">
-            <span>BG COLOR</span>
-        </div>
-    </nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const upload = document.getElementById('upload');
     const imgDisplay = document.getElementById('imgToCrop');
     let activeImg = new Image();
     let cropper;
 
-    upload.onchange = (e) => {
+    // 1. Live Image Loading
+    document.getElementById('upload').onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (f) => {
+            activeImg = new Image();
+            activeImg.crossOrigin = "anonymous";
             activeImg.src = f.target.result;
             activeImg.onload = () => {
                 imgDisplay.src = activeImg.src;
@@ -126,49 +99,45 @@
         reader.readAsDataURL(e.target.files[0]);
     };
 
+    // 2. Live Rendering (No Lag)
     function render() {
         if(!activeImg.src) return;
+        
+        // Mobile Wallpaper Ratio Fix
         canvas.width = activeImg.width;
         canvas.height = activeImg.height;
+
+        ctx.clearRect(0,0, canvas.width, canvas.height);
         
+        // Background Color logic
         ctx.fillStyle = document.getElementById('bgColor').value;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
+        // Filters logic
         const b = document.getElementById('bright').value;
-        const c = document.getElementById('contr').value;
         const s = document.getElementById('satur').value;
+        ctx.filter = `brightness(${b}%) saturate(${s}%)`;
         
-        ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
         ctx.drawImage(activeImg, 0, 0);
     }
 
-    document.querySelectorAll('input').forEach(input => {
-        input.oninput = render;
+    // 3. Events for Live Change
+    document.querySelectorAll('input').forEach(el => {
+        el.oninput = render;
     });
 
-    function applyPreset(f) {
-        ctx.filter = f;
-        ctx.drawImage(activeImg, 0, 0);
-    }
-
-    function resetAll() {
-        document.getElementById('bright').value = 100;
-        document.getElementById('contr').value = 100;
-        document.getElementById('satur').value = 100;
-        document.getElementById('bgColor').value = "#000000";
-        render();
-    }
-
+    // 4. Crop logic
     document.getElementById('cropBtn').onclick = () => {
         if(!activeImg.src) return;
         canvas.style.display = 'none';
         imgDisplay.style.display = 'block';
         document.getElementById('applyCrop').style.display = 'block';
-        cropper = new Cropper(imgDisplay, { viewMode: 1 });
+        cropper = new Cropper(imgDisplay, { aspectRatio: 9/16, viewMode: 1 });
     };
 
     document.getElementById('applyCrop').onclick = () => {
-        activeImg.src = cropper.getCroppedCanvas().toDataURL();
+        const croppedData = cropper.getCroppedCanvas().toDataURL();
+        activeImg.src = croppedData;
         activeImg.onload = () => {
             render();
             canvas.style.display = 'block';
@@ -178,10 +147,21 @@
         };
     };
 
+    function applyFilter(f) {
+        ctx.filter = f;
+        ctx.drawImage(activeImg, 0, 0);
+    }
+
+    function resetAll() {
+        location.reload(); // Best for mobile reset
+    }
+
+    // 5. Fixed Export Logic
     document.getElementById('download').onclick = () => {
+        if(!activeImg.src) return alert("Pehle photo daalo!");
         const link = document.createElement('a');
-        link.download = 'D_Photo_Tools.png';
-        link.href = canvas.toDataURL();
+        link.download = 'D_Photo_Tools_Export.png';
+        link.href = canvas.toDataURL("image/png");
         link.click();
     };
 </script>
