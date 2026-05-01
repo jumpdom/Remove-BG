@@ -1,0 +1,102 @@
+:root {
+    --bg-dark: #0a0a0c;
+    --panel-bg: #16161a;
+    --neon-cyan: #00f2ff;
+    --neon-text-shadow: 0 0 10px rgba(0, 242, 255, 0.7);
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    overflow: hidden;
+}
+
+.neon-text {
+    color: var(--neon-cyan);
+    text-shadow: var(--neon-text-shadow);
+    letter-spacing: 2px;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+.editor-body {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 280px;
+    background: var(--panel-bg);
+    padding: 20px;
+    border-right: 1px solid #333;
+}
+
+.tool-group {
+    margin-bottom: 30px;
+}
+
+.tool-group h3 {
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--neon-cyan);
+}
+
+.filter-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: white;
+    padding: 8px 12px;
+    margin: 5px 0;
+    width: 100%;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.filter-btn:hover {
+    border-color: var(--neon-cyan);
+    box-shadow: var(--neon-text-shadow);
+}
+
+.canvas-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    padding: 20px;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 80vh;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.btn-primary, .btn-save {
+    background: var(--neon-cyan);
+    color: black;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
