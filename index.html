@@ -6,109 +6,116 @@
     <title>D PHOTO TOOLS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
-        :root { --bg: #ffffff; --panel: #000000; --text: #333; }
+        :root { --main-bg: #ffffff; --pnl-bg: #000000; }
         * { box-sizing: border-box; touch-action: manipulation; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); overflow: hidden; font-family: sans-serif; }
-        
-        .app { display: flex; flex-direction: column; height: 100vh; }
-        header { height: 55px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; }
-        .logo { font-weight: 800; font-size: 16px; letter-spacing: 1px; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--main-bg); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
 
-        /* Workspace - Photo focus */
-        .viewport { flex: 1; display: flex; justify-content: center; align-items: center; background: #f4f4f4; position: relative; padding: 20px; }
-        #canvas { max-width: 100%; max-height: 100%; object-fit: contain; background: #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .container { display: flex; flex-direction: column; height: 100vh; }
+        
+        header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #eee; }
+        .logo { font-weight: 900; font-size: 14px; letter-spacing: 0.5px; }
+
+        /* Photo Viewport - No Scroll */
+        .viewer { flex: 1; display: flex; justify-content: center; align-items: center; background: #f0f0f0; padding: 20px; position: relative; }
+        #canvas { max-width: 90%; max-height: 85%; object-fit: contain; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 4px; }
         #imgToCrop { display: none; }
 
-        /* Adjustment Panel (Black) */
-        .adj-panel { 
+        /* Adjust Panel (Black Theme) */
+        .adjust-box { 
             position: absolute; bottom: 85px; left: 10px; right: 10px; 
-            background: var(--panel); border-radius: 15px; padding: 20px; 
+            background: var(--pnl-bg); border-radius: 15px; padding: 18px; 
             display: none; flex-direction: column; gap: 15px; z-index: 50; 
         }
-        .adj-row { display: flex; align-items: center; gap: 15px; color: #fff; font-size: 12px; }
-        .adj-row input { flex: 1; accent-color: #fff; }
+        .row { display: flex; align-items: center; gap: 12px; color: #fff; font-size: 11px; }
+        .row input { flex: 1; accent-color: #fff; }
 
-        /* Bottom Toolbar (White) */
-        .toolbar { height: 80px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; background: #fff; }
-        .t-btn { border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #888; cursor: pointer; }
-        .t-btn:active { color: #000; }
+        /* Bottom Toolbar */
+        .bottom-nav { height: 80px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; background: #fff; }
+        .btn-tool { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; color: #777; font-weight: 600; }
+        .btn-tool:active { color: #000; }
 
-        .save-btn { background: #000; color: #fff; border: none; padding: 7px 15px; border-radius: 5px; font-weight: bold; font-size: 12px; }
-        #doneCrop { position: absolute; top: 10px; right: 10px; background: #000; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; display: none; z-index: 100; }
+        .btn-action { background: #000; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; font-size: 11px; }
+        #apply { position: absolute; top: 15px; right: 15px; z-index: 100; display: none; }
     </style>
 </head>
 <body>
 
-<div class="app">
+<div class="container">
     <header>
         <div class="logo">D PHOTO TOOLS</div>
-        <div style="display:flex; gap:10px;">
-            <input type="file" id="up" hidden accept="image/*">
-            <button onclick="document.getElementById('up').click()" class="save-btn" style="background:#eee; color:#000;">ADD</button>
-            <button id="save" class="save-btn">SAVE</button>
+        <div style="display:flex; gap:8px;">
+            <input type="file" id="fileInp" hidden accept="image/*">
+            <button onclick="document.getElementById('fileInp').click()" class="btn-action" style="background:#f5f5f5; color:#000;">ADD</button>
+            <button id="save" class="btn-action">SAVE</button>
         </div>
     </header>
 
-    <main class="viewport">
+    <main class="viewer">
         <canvas id="canvas"></canvas>
         <img id="imgToCrop">
-        <button id="doneCrop">DONE</button>
+        <button id="apply" class="btn-action">DONE</button>
 
-        <div class="adj-panel" id="pnl">
-            <div class="adj-row"><label>Light</label><input type="range" id="br" min="0" max="200" value="100"></div>
-            <div class="adj-row"><label>Color</label><input type="range" id="sa" min="0" max="200" value="100"></div>
-            <div class="adj-row"><label>BG</label><input type="color" id="bg" value="#ffffff"></div>
-            <button onclick="togglePnl()" style="background:#222; color:#fff; border:none; padding:5px; border-radius:5px; margin-top:5px; font-size:10px;">CLOSE</button>
+        <!-- Hidden Adjust Panel -->
+        <div class="adjust-box" id="adjPnl">
+            <div class="row"><label>BRIGHT</label><input type="range" id="br" min="0" max="200" value="100"></div>
+            <div class="row"><label>COLOR</label><input type="range" id="st" min="0" max="200" value="100"></div>
+            <div class="row">
+                <label>BG COLOR</label>
+                <input type="color" id="bg" value="#ffffff" style="width:40px; height:22px; border:none; background:none;">
+            </div>
+            <button onclick="openAdj()" class="btn-action" style="background:#222; margin-top:5px; padding:4px;">CLOSE</button>
         </div>
     </main>
 
-    <nav class="toolbar">
-        <button class="t-btn" id="cp"><span>✂️</span><span>CROP</span></button>
-        <button class="t-btn" onclick="togglePnl()"><span>⚙️</span><span>ADJUST</span></button>
-        <button class="t-btn" onclick="filter('grayscale(100%)')"><span>🌑</span><span>B&W</span></button>
-        <button class="t-btn" onclick="location.reload()"><span>🔄</span><span>RESET</span></button>
+    <nav class="bottom-nav">
+        <button class="btn-tool" id="crop"><span>✂️</span>CROP</button>
+        <button class="btn-tool" onclick="openAdj()"><span>⚙️</span>ADJUST</button>
+        <button class="btn-tool" onclick="filterImg('grayscale(100%)')"><span>🌑</span>B&W</button>
+        <button class="btn-tool" onclick="location.reload()"><span>🔄</span>RESET</button>
     </nav>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
-    const cvs = document.getElementById('canvas'), ctx = cvs.getContext('2d');
-    const imgC = document.getElementById('imgToCrop'), up = document.getElementById('up');
-    let img = new Image(), crop;
+    const cv = document.getElementById('canvas'), ctx = cv.getContext('2d');
+    const ic = document.getElementById('imgToCrop'), inp = document.getElementById('fileInp');
+    let img = new Image(), crp;
 
-    function togglePnl() { const p = document.getElementById('pnl'); p.style.display = p.style.display==='flex'?'none':'flex'; }
+    function openAdj() { const p = document.getElementById('adjPnl'); p.style.display = p.style.display==='flex'?'none':'flex'; }
 
-    up.onchange = (e) => {
+    inp.onchange = (e) => {
         const r = new FileReader();
-        r.onload = (f) => { img.src = f.target.result; img.onload = () => { imgC.src = img.src; draw(); } };
+        r.onload = (f) => { img.src = f.target.result; img.onload = () => { ic.src = img.src; refresh(); } };
         r.readAsDataURL(e.target.files[0]);
     };
 
-    function draw() {
+    function refresh() {
         if(!img.src) return;
-        cvs.width = img.width; cvs.height = img.height;
-        ctx.fillStyle = document.getElementById('bg').value; ctx.fillRect(0,0,cvs.width,cvs.height);
-        ctx.filter = `brightness(${document.getElementById('br').value}%) saturate(${document.getElementById('sa').value}%)`;
+        cv.width = img.width; cv.height = img.height;
+        ctx.fillStyle = document.getElementById('bg').value; 
+        ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.filter = `brightness(${document.getElementById('br').value}%) saturate(${document.getElementById('st').value}%)`;
         ctx.drawImage(img, 0, 0);
     }
 
-    document.querySelectorAll('input').forEach(i => i.oninput = draw);
+    document.querySelectorAll('input').forEach(i => i.oninput = refresh);
 
-    document.getElementById('cp').onclick = () => {
+    document.getElementById('crop').onclick = () => {
         if(!img.src) return;
-        cvs.style.display = 'none'; imgC.style.display = 'block'; document.getElementById('doneCrop').style.display = 'block';
-        crop = new Cropper(imgC, { viewMode: 1, aspectRatio: 9/16 });
+        cv.style.display = 'none'; ic.style.display = 'block'; document.getElementById('apply').style.display = 'block';
+        crp = new Cropper(ic, { viewMode: 1, aspectRatio: 9/16 });
     };
 
-    document.getElementById('doneCrop').onclick = () => {
-        img.src = crop.getCroppedCanvas().toDataURL();
-        img.onload = () => { draw(); cvs.style.display='block'; imgC.style.display='none'; document.getElementById('doneCrop').style.display='none'; crop.destroy(); };
+    document.getElementById('apply').onclick = () => {
+        img.src = crp.getCroppedCanvas().toDataURL();
+        img.onload = () => { refresh(); cv.style.display='block'; ic.style.display='none'; document.getElementById('apply').style.display='none'; crp.destroy(); };
     };
 
-    function filter(f) { ctx.filter = f; ctx.drawImage(img, 0, 0); }
+    function filterImg(f) { ctx.filter = f; ctx.drawImage(img, 0, 0); }
 
     document.getElementById('save').onclick = () => {
-        const a = document.createElement('a'); a.download = 'D_Photo.png'; a.href = cvs.toDataURL(); a.click();
+        if(!img.src) return alert("Photo select karein");
+        const l = document.createElement('a'); l.download = 'D_PHOTO_EDIT.png'; l.href = cv.toDataURL(); l.click();
     };
 </script>
 </body>
