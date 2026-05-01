@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Edit Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font for professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1 class="neon-text">NEON<span>EDIT</span></h1>
+            <input type="file" id="upload" hidden>
+            <label for="upload" class="btn-primary">Upload Photo</label>
+        </header>
+
+        <main class="editor-body">
+            <aside class="sidebar">
+                <div class="tool-group">
+                    <h3>Adjustments</h3>
+                    <label>Brightness</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100">
+                    <label>Contrast</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100">
+                </div>
+
+                <div class="tool-group">
+                    <h3>Filters</h3>
+                    <button class="filter-btn" onclick="applyFilter('grayscale(100%)')">Grayscale</button>
+                    <button class="filter-btn" onclick="applyFilter('sepia(100%)')">Sepia</button>
+                    <button class="filter-btn" onclick="applyFilter('none')">Reset</button>
+                </div>
+
+                <button class="btn-save" id="download">Download PNG</button>
+            </aside>
+
+            <section class="canvas-area">
+                <canvas id="mainCanvas"></canvas>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
